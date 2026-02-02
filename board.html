@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Board - Clawed Workspace</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Board-specific styles */
+    .board-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      padding-top: 100px;
+      padding-bottom: 48px;
+      min-height: 100vh;
+    }
+
+    /* Board Header */
+    .board-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .board-search {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 16px;
+      flex: 1;
+      max-width: 400px;
+      transition: border-color 0.2s ease;
+    }
+
+    .board-search:focus-within {
+      border-color: var(--accent);
+    }
+
+    .board-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .board-search input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .search-icon {
+      color: var(--text-secondary);
+      margin-right: 10px;
+    }
+
+    .btn-new-post {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-new-post:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* Sorting Tabs */
+    .sort-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .sort-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .sort-tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .sort-tab.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    /* Thread List */
+    .thread-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .thread-card {
+      display: flex;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .thread-card:hover {
+      border-color: var(--accent);
+    }
+
+    /* Vote Section */
+    .vote-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      background: var(--bg-tertiary);
+      min-width: 50px;
+      gap: 2px;
+    }
+
+    .vote-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: transparent;
+      border: none;
+      font-size: 1.1rem;
+    }
+
+    .vote-btn:hover {
+      background: var(--bg-secondary);
+    }
+
+    .vote-btn.upvote:hover,
+    .vote-btn.upvote.active {
+      color: #ff4500;
+    }
+
+    .vote-btn.downvote:hover,
+    .vote-btn.downvote.active {
+      color: #7193ff;
+    }
+
+    .vote-count {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      padding: 2px 0;
+    }
+
+    /* Thread Content */
+    .thread-content {
+      flex: 1;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .thread-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .thread-tag {
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .thread-tag.discussion {
+      background: #3fb950;
+    }
+
+    .thread-tag.question {
+      background: #d29922;
+    }
+
+    .thread-tag.announcement {
+      background: #f85149;
+    }
+
+    .thread-tag.showcase {
+      background: #a371f7;
+    }
+
+    .thread-author {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .thread-author:hover {
+      text-decoration: underline;
+    }
+
+    .thread-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+      line-height: 1.4;
+    }
+
+    .thread-title:hover {
+      color: var(--accent);
+    }
+
+    .thread-preview {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .thread-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .thread-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .thread-stat:hover {
+      color: var(--text-primary);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      background: var(--bg-tertiary);
+      padding: 14px 16px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-content {
+      padding: 16px;
+    }
+
+    .community-banner {
+      height: 60px;
+      background: linear-gradient(135deg, var(--accent) 0%, #a371f7 100%);
+    }
+
+    .community-info {
+      text-align: center;
+      padding: 16px;
+    }
+
+    .community-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--bg-tertiary);
+      border: 4px solid var(--bg-secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: -40px auto 12px;
+    }
+
+    .community-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .community-handle {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+
+    .community-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .community-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .btn-join {
+      display: block;
+      width: 100%;
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-join:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Rules List */
+    .rules-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .rule-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .rule-item:first-child {
+      padding-top: 0;
+    }
+
+    .rule-number {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      min-width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .rule-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Popular Tags */
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .popular-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-tertiary);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .popular-tag:hover {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+
+    .tag-count {
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .popular-tag:hover .tag-count {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Floating Mobile Button */
+    .floating-create-btn {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      text-decoration: none;
+      z-index: 100;
+      transition: all 0.2s ease;
+    }
+
+    .floating-create-btn:hover {
+      transform: scale(1.1);
+      background: var(--accent-hover);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .board-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .btn-new-post {
+        display: none;
+      }
+
+      .floating-create-btn {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .board-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .board-search {
+        max-width: none;
+      }
+
+      .sort-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .sort-tab {
+        padding: 8px 14px;
+        white-space: nowrap;
+      }
+
+      .thread-card {
+        flex-direction: column;
+      }
+
+      .vote-section {
+        flex-direction: row;
+        padding: 8px 12px;
+        min-width: auto;
+        justify-content: flex-start;
+      }
+
+      .thread-preview {
+        display: none;
+      }
+
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🐾</span>
+          <span>Clawed</span>
+        </a>
+        <nav>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="board.html">Board</a></li>
+            <li><a href="#docs">Docs</a></li>
+            <li><a href="#about">About</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="board-layout">
+      <!-- Feed Section -->
+      <section class="feed-section">
+        <!-- Board Header -->
+        <div class="board-header">
+          <div class="board-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="board-search-input" placeholder="Search posts...">
+          </div>
+          <a href="#create-post" class="btn-new-post">
+            <span>✏️</span>
+            New Post
+          </a>
+        </div>
+
+        <!-- Sorting Tabs -->
+        <div class="sort-tabs" role="tablist">
+          <a href="#hot" class="sort-tab active" role="tab" id="tab-hot">
+            <span>🔥</span>
+            Hot
+          </a>
+          <a href="#new" class="sort-tab" role="tab" id="tab-new">
+            <span>✨</span>
+            New
+          </a>
+          <a href="#top" class="sort-tab" role="tab" id="tab-top">
+            <span>📈</span>
+            Top
+          </a>
+        </div>
+
+        <!-- Thread List -->
+        <div class="thread-list" id="thread-list">
+          <!-- Thread 1 - Announcement -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">847</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag announcement">Announcement</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/clawed_admin</a>
+                <span>•</span>
+                <span>2 hours ago</span>
+              </div>
+              <a href="#thread" class="thread-title">🎉 Welcome to the Clawed Community Board! Read the rules before posting.</a>
+              <p class="thread-preview">Hey everyone! We're thrilled to launch this community space. Before diving in, please take a moment to read our community guidelines in the sidebar. Let's keep this place awesome together!</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>124 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thread 2 - Showcase -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">412</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag showcase">Showcase</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/dev_sarah</a>
+                <span>•</span>
+                <span>5 hours ago</span>
+              </div>
+              <a href="#thread" class="thread-title">Just shipped my first AI-powered app using Clawed - here's what I learned</a>
+              <p class="thread-preview">After 3 months of development, I finally launched! The integration was smoother than expected. Here are my top 5 takeaways for anyone starting their journey...</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>89 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thread 3 - Discussion -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">256</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag discussion">Discussion</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/curious_cat</a>
+                <span>•</span>
+                <span>8 hours ago</span>
+              </div>
+              <a href="#thread" class="thread-title">What's everyone's preferred workflow for debugging complex prompts?</a>
+              <p class="thread-preview">I've been struggling with prompt engineering lately. Sometimes the outputs are perfect, other times completely off. Would love to hear how others approach systematic debugging...</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>167 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thread 4 - Question -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">78</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag question">Question</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/newbie_dev</a>
+                <span>•</span>
+                <span>12 hours ago</span>
+              </div>
+              <a href="#thread" class="thread-title">How do I integrate webhooks with the API? Documentation seems outdated</a>
+              <p class="thread-preview">I'm trying to set up real-time notifications but the webhook section in the docs references v1 endpoints. Has anyone successfully implemented this with v2?</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>23 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thread 5 - Discussion -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">189</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag discussion">Discussion</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/tech_enthusiast</a>
+                <span>•</span>
+                <span>1 day ago</span>
+              </div>
+              <a href="#thread" class="thread-title">The future of AI agents: Autonomous or supervised? Let's discuss.</a>
+              <p class="thread-preview">With all the recent advancements, I've been thinking about where we're headed. Full autonomy sounds exciting but also terrifying. What's the right balance?</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>312 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thread 6 - Showcase -->
+          <article class="thread-card">
+            <div class="vote-section">
+              <button class="vote-btn upvote" aria-label="Upvote">▲</button>
+              <span class="vote-count">534</span>
+              <button class="vote-btn downvote" aria-label="Downvote">▼</button>
+            </div>
+            <div class="thread-content">
+              <div class="thread-meta">
+                <span class="thread-tag showcase">Showcase</span>
+                <span>Posted by</span>
+                <a href="#user" class="thread-author">u/creative_coder</a>
+                <span>•</span>
+                <span>1 day ago</span>
+              </div>
+              <a href="#thread" class="thread-title">[Video] Built a voice-controlled home automation system in a weekend!</a>
+              <p class="thread-preview">Used Clawed for the natural language processing and hooked it up to my smart home. Now I can control everything just by talking naturally. Demo inside!</p>
+              <div class="thread-stats">
+                <a href="#comments" class="thread-stat">
+                  <span>💬</span>
+                  <span>201 comments</span>
+                </a>
+                <a href="#share" class="thread-stat">
+                  <span>↗️</span>
+                  <span>Share</span>
+                </a>
+                <a href="#save" class="thread-stat">
+                  <span>🔖</span>
+                  <span>Save</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <!-- Community Info Card -->
+        <div class="sidebar-card">
+          <div class="community-banner"></div>
+          <div class="community-info">
+            <div class="community-icon">🐾</div>
+            <h2 class="community-name">Clawed Community</h2>
+            <p class="community-handle">c/clawed</p>
+            <p class="community-desc">The official community for Clawed users. Share your projects, ask questions, and connect with fellow developers.</p>
+            <div class="community-stats">
+              <div class="stat-item">
+                <div class="stat-value">24.5k</div>
+                <div class="stat-label">Members</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">1.2k</div>
+                <div class="stat-label">Online</div>
+              </div>
+            </div>
+            <a href="#join" class="btn-join">Join Community</a>
+          </div>
+        </div>
+
+        <!-- Rules Card -->
+        <div class="sidebar-card">
+          <div class="sidebar-header">📜 Community Rules</div>
+          <div class="sidebar-content">
+            <ol class="rules-list">
+              <li class="rule-item">
+                <span class="rule-number">1</span>
+                <span class="rule-text">Be respectful and constructive in discussions</span>
+              </li>
+              <li class="rule-item">
+                <span class="rule-number">2</span>
+                <span class="rule-text">No spam, self-promotion, or off-topic content</span>
+              </li>
+              <li class="rule-item">
+                <span class="rule-number">3</span>
+                <span class="rule-text">Use appropriate tags/flairs for your posts</span>
+              </li>
+              <li class="rule-item">
+                <span class="rule-number">4</span>
+                <span class="rule-text">Search before posting duplicate questions</span>
+              </li>
+              <li class="rule-item">
+                <span class="rule-number">5</span>
+                <span class="rule-text">No sharing of private API keys or credentials</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Popular Tags Card -->
+        <div class="sidebar-card">
+          <div class="sidebar-header">🏷️ Popular Tags</div>
+          <div class="sidebar-content">
+            <div class="tags-list">
+              <a href="#tag" class="popular-tag">
+                <span>tutorial</span>
+                <span class="tag-count">234</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>help</span>
+                <span class="tag-count">189</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>showcase</span>
+                <span class="tag-count">156</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>api</span>
+                <span class="tag-count">142</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>bug</span>
+                <span class="tag-count">98</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>feature-request</span>
+                <span class="tag-count">87</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>prompt-engineering</span>
+                <span class="tag-count">76</span>
+              </a>
+              <a href="#tag" class="popular-tag">
+                <span>integrations</span>
+                <span class="tag-count">64</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Floating Create Button (Mobile) -->
+  <a href="#create-post" class="floating-create-btn" aria-label="Create new post">
+    ✏️
+  </a>
+</body>
+</html>

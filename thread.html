@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thread - Clawed Board</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a24;
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --accent-up: #22c55e;
+            --accent-down: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.3);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .header-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-left: auto;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Post Card */
+        .post-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .post-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .post-author {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .post-time {
+            color: var(--text-muted);
+        }
+
+        .post-tag {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .post-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0;
+            line-height: 1.3;
+        }
+
+        .post-body {
+            padding: 24px;
+        }
+
+        .post-content {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .post-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .vote-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vote-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 1.25rem;
+        }
+
+        .vote-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .vote-btn.upvote:hover,
+        .vote-btn.upvote.active {
+            color: var(--accent-up);
+        }
+
+        .vote-btn.downvote:hover,
+        .vote-btn.downvote.active {
+            color: var(--accent-down);
+        }
+
+        .vote-count {
+            font-weight: 700;
+            font-size: 1.1rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .comments-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comments-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .comment-count {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .sort-select {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Comment Input */
+        .comment-input-container {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comment-input {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.2s ease;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .comment-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .comment-input-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Comments List */
+        .comments-list {
+            padding: 0;
+        }
+
+        .comment {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s ease;
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+        }
+
+        .comment:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .comment-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .op-badge {
+            background: var(--accent-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .comment-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .comment-vote-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .comment-vote-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .comment-vote-btn.upvote:hover {
+            color: var(--accent-up);
+        }
+
+        .comment-vote-btn.downvote:hover {
+            color: var(--accent-down);
+        }
+
+        .reply-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .reply-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Nested Comments */
+        .comment-replies {
+            margin-left: 24px;
+            padding-left: 24px;
+            border-left: 2px solid var(--border-color);
+            margin-top: 16px;
+        }
+
+        .comment-replies .comment {
+            padding: 16px 0;
+            border-bottom: none;
+        }
+
+        .comment-replies .comment:first-child {
+            padding-top: 0;
+        }
+
+        /* Collapse Button */
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            margin-left: auto;
+        }
+
+        .collapse-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        .collapsed .comment-content,
+        .collapsed .comment-actions,
+        .collapsed .comment-replies {
+            display: none;
+        }
+
+        /* Reply Input */
+        .reply-input-container {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .reply-input-container.active {
+            display: block;
+        }
+
+        .reply-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: none;
+            min-height: 80px;
+        }
+
+        .reply-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .reply-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .cancel-btn {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .cancel-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .reply-submit-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Level indicators for deep nesting */
+        .comment[data-level="2"] { margin-left: 0; }
+        .comment[data-level="3"] .comment-author { font-size: 0.85rem; }
+        .comment[data-level="4"] .comment-content { font-size: 0.9rem; }
+        .comment[data-level="5"] { opacity: 0.9; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .post-title {
+                font-size: 1.35rem;
+            }
+
+            .post-actions {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .comment-replies {
+                margin-left: 12px;
+                padding-left: 12px;
+            }
+
+            .comments-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="board.html" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                게시판으로
+            </a>
+            <a href="index.html" class="header-logo">🐾 Clawed</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Post Card -->
+        <article class="post-card" id="post-container">
+            <div class="post-header">
+                <div class="post-meta">
+                    <span class="post-author" id="post-author">Anonymous</span>
+                    <span class="post-time" id="post-time">방금 전</span>
+                    <span class="post-tag" id="post-tag">일반</span>
+                </div>
+                <h1 class="post-title" id="post-title">로딩 중...</h1>
+            </div>
+            <div class="post-body">
+                <div class="post-content" id="post-content">
+                    게시글을 불러오는 중입니다...
+                </div>
+            </div>
+            <div class="post-actions">
+                <div class="vote-group">
+                    <button class="vote-btn upvote" id="post-upvote">▲</button>
+                    <span class="vote-count" id="post-vote-count">0</span>
+                    <button class="vote-btn downvote" id="post-downvote">▼</button>
+                </div>
+                <button class="action-btn" id="share-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    공유
+                </button>
+                <button class="action-btn" id="bookmark-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    저장
+                </button>
+            </div>
+        </article>
+
+        <!-- Comments Section -->
+        <section class="comments-section">
+            <div class="comments-header">
+                <h2 class="comments-title">
+                    댓글 <span class="comment-count" id="comment-count">(0)</span>
+                </h2>
+                <select class="sort-select" id="comment-sort">
+                    <option value="best">추천순</option>
+                    <option value="new">최신순</option>
+                    <option value="old">오래된순</option>
+                </select>
+            </div>
+
+            <!-- Comment Input -->
+            <div class="comment-input-container">
+                <textarea class="comment-input" id="comment-input" placeholder="댓글을 작성하세요..."></textarea>
+                <div class="comment-input-actions">
+                    <button class="submit-btn" id="submit-comment">댓글 작성</button>
+                </div>
+            </div>
+
+            <!-- Comments List -->
+            <div class="comments-list" id="comments-list">
+                <!-- Demo Comments -->
+                <div class="comment" data-level="1" data-id="c1">
+                    <div class="comment-header">
+                        <span class="comment-author">developer_kim</span>
+                        <span class="op-badge">OP</span>
+                        <span class="comment-time">2시간 전</span>
+                        <button class="collapse-btn">[−]</button>
+                    </div>
+                    <div class="comment-content">
+                        이 프로젝트 정말 대단하네요! Three.js 파티클 효과가 인상적입니다. 
+                        혹시 성능 최적화는 어떻게 하셨나요?
+                    </div>
+                    <div class="comment-actions">
+                        <button class="comment-vote-btn upvote">▲ 42</button>
+                        <button class="comment-vote-btn downvote">▼</button>
+                        <button class="reply-btn">답글</button>
+                    </div>
+                    
+                    <!-- Nested Replies -->
+                    <div class="comment-replies">
+                        <div class="comment" data-level="2" data-id="c2">
+                            <div class="comment-header">
+                                <span class="comment-author">clawdbot_fan</span>
+                                <span class="comment-time">1시간 전</span>
+                                <button class="collapse-btn">[−]</button>
+                            </div>
+                            <div class="comment-content">
+                                BufferGeometry 사용하고 requestAnimationFrame으로 최적화했다고 들었어요. 
+                                탭이 비활성화되면 자동으로 멈추는 것도 있고요.
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-vote-btn upvote">▲ 18</button>
+                                <button class="comment-vote-btn downvote">▼</button>
+                                <button class="reply-btn">답글</button>
+                            </div>
+
+                            <div class="comment-replies">
+                                <div class="comment" data-level="3" data-id="c3">
+                                    <div class="comment-header">
+                                        <span class="comment-author">webdev_park</span>
+                                        <span class="comment-time">45분 전</span>
+                                    </div>
+                                    <div class="comment-content">
+                                        오 그런 최적화 팁 좋네요! 저도 비슷한 프로젝트에 적용해봐야겠어요.
+                                    </div>
+                                    <div class="comment-actions">
+                                        <button class="comment-vote-btn upvote">▲ 7</button>
+                                        <button class="comment-vote-btn downvote">▼</button>
+                                        <button class="reply-btn">답글</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comment" data-level="1" data-id="c4">
+                    <div class="comment-header">
+                        <span class="comment-author">ai_enthusiast</span>
+                        <span class="comment-time">3시간 전</span>
+                        <button class="collapse-btn">[−]</button>
+                    </div>
+                    <div class="comment-content">
+                        Clawdbot으로 이런 것도 가능하군요. 병렬 에이전트로 만들었다니 신기하네요. 
+                        혹시 사용해보신 분 있나요? 후기 공유해주세요!
+                    </div>
+                    <div class="comment-actions">
+                        <button class="comment-vote-btn upvote">▲ 31</button>
+                        <button class="comment-vote-btn downvote">▼</button>
+                        <button class="reply-btn">답글</button>
+                    </div>
+
+                    <div class="comment-replies">
+                        <div class="comment" data-level="2" data-id="c5">
+                            <div class="comment-header">
+                                <span class="comment-author">tech_reviewer</span>
+                                <span class="comment-time">2시간 전</span>
+                            </div>
+                            <div class="comment-content">
+                                저도 사용해봤는데 확실히 개발 속도가 빨라져요. 
+                                특히 반복 작업이나 보일러플레이트 코드 작성할 때 유용합니다.
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-vote-btn upvote">▲ 24</button>
+                                <button class="comment-vote-btn downvote">▼</button>
+                                <button class="reply-btn">답글</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comment" data-level="1" data-id="c6">
+                    <div class="comment-header">
+                        <span class="comment-author">frontend_master</span>
+                        <span class="comment-time">5시간 전</span>
+                        <button class="collapse-btn">[−]</button>
+                    </div>
+                    <div class="comment-content">
+                        GSAP 애니메이션이 정말 부드럽네요. 커스텀 커서도 감각적이고요. 
+                        포트폴리오 사이트로 쓰기에 완벽할 것 같습니다. 👏
+                    </div>
+                    <div class="comment-actions">
+                        <button class="comment-vote-btn upvote">▲ 56</button>
+                        <button class="comment-vote-btn downvote">▼</button>
+                        <button class="reply-btn">답글</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/board.js"></script>
+    <script>
+        // Initialize thread page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get thread ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const threadId = params.get('id');
+
+            if (threadId && typeof BoardApp !== 'undefined') {
+                BoardApp.loadThread(threadId);
+            }
+
+            // Collapse functionality
+            document.querySelectorAll('.collapse-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const comment = btn.closest('.comment');
+                    comment.classList.toggle('collapsed');
+                    btn.textContent = comment.classList.contains('collapsed') ? '[+]' : '[−]';
+                });
+            });
+
+            // Reply button functionality
+            document.querySelectorAll('.reply-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const comment = btn.closest('.comment');
+                    let replyContainer = comment.querySelector('.reply-input-container');
+                    
+                    if (!replyContainer) {
+                        replyContainer = document.createElement('div');
+                        replyContainer.className = 'reply-input-container';
+                        replyContainer.innerHTML = `
+                            <textarea class="reply-input" placeholder="답글을 작성하세요..."></textarea>
+                            <div class="reply-actions">
+                                <button class="cancel-btn">취소</button>
+                                <button class="reply-submit-btn">답글 작성</button>
+                            </div>
+                        `;
+                        comment.querySelector('.comment-actions').after(replyContainer);
+
+                        replyContainer.querySelector('.cancel-btn').addEventListener('click', () => {
+                            replyContainer.classList.remove('active');
+                        });
+                    }
+
+                    replyContainer.classList.toggle('active');
+                    if (replyContainer.classList.contains('active')) {
+                        replyContainer.querySelector('.reply-input').focus();
+                    }
+                });
+            });
+
+            // Vote buttons
+            document.querySelectorAll('.vote-btn, .comment-vote-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                });
+            });
+
+            // Share button
+            document.getElementById('share-btn')?.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('링크가 복사되었습니다!');
+            });
+        });
+    </script>
+</body>
+</html>

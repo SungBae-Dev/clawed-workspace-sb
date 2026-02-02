@@ -516,11 +516,18 @@
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
         .news-card:hover {
             border-color: var(--accent-primary);
             transform: translateY(-4px);
+        }
+        
+        a.news-card:visited {
+            color: inherit;
         }
 
         .news-image {
@@ -928,64 +935,26 @@
                 </div>
             </div>
             <div class="news-grid" id="news-grid">
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">📈</div>
+                <!-- 뉴스는 news.js에서 동적으로 로드됩니다 -->
+                <div class="news-card skeleton-card">
+                    <div class="news-image skeleton"></div>
                     <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">연합뉴스</span>
-                            <span class="news-time">15분 전</span>
-                        </div>
-                        <h3 class="news-card-title">코스피 5000선 붕괴...2025년 4월 이후 최대 하락률</h3>
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
                     </div>
                 </div>
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">💰</div>
+                <div class="news-card skeleton-card">
+                    <div class="news-image skeleton"></div>
                     <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">머니투데이</span>
-                            <span class="news-time">32분 전</span>
-                        </div>
-                        <h3 class="news-card-title">금·은 가격 급락...비트코인 8만달러대 붕괴</h3>
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
                     </div>
                 </div>
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">🌍</div>
+                <div class="news-card skeleton-card">
+                    <div class="news-image skeleton"></div>
                     <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">한국경제</span>
-                            <span class="news-time">1시간 전</span>
-                        </div>
-                        <h3 class="news-card-title">글로벌 디레버리징 본격화...위험자산 동반 하락</h3>
-                    </div>
-                </div>
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">📊</div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">뉴스1</span>
-                            <span class="news-time">1시간 전</span>
-                        </div>
-                        <h3 class="news-card-title">외국인 순매도 1조원 돌파...기관도 대량 매도</h3>
-                    </div>
-                </div>
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">💵</div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">이데일리</span>
-                            <span class="news-time">2시간 전</span>
-                        </div>
-                        <h3 class="news-card-title">원/달러 환율 1,460원 돌파...고환율 장기화 우려</h3>
-                    </div>
-                </div>
-                <div class="news-card" onclick="window.open('#', '_blank')">
-                    <div class="news-image">🏢</div>
-                    <div class="news-content">
-                        <div class="news-meta">
-                            <span class="news-source">서울경제</span>
-                            <span class="news-time">2시간 전</span>
-                        </div>
-                        <h3 class="news-card-title">삼성전자 15만원대 추락...반도체 업종 동반 급락</h3>
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
                     </div>
                 </div>
             </div>
@@ -1046,11 +1015,80 @@
         });
 
         // Initialize market data
-        if (typeof initMarket === 'function') {
-            initMarket();
+        if (typeof Market !== 'undefined') {
+            Market.init();
         }
-        if (typeof initNews === 'function') {
-            initNews();
+        
+        // Initialize news with dynamic loading
+        if (typeof NewsModule !== 'undefined') {
+            NewsModule.initNews('news-grid');
+        } else {
+            // Fallback: 기본 뉴스 데이터 표시
+            loadFallbackNews();
+        }
+        
+        // Fallback news loader
+        function loadFallbackNews() {
+            const newsGrid = document.getElementById('news-grid');
+            if (!newsGrid) return;
+            
+            const defaultNews = [
+                {
+                    title: '코스피 5000선 붕괴...2025년 4월 이후 최대 하락률',
+                    source: '연합뉴스',
+                    time: '15분 전',
+                    url: 'https://www.yna.co.kr/economy/stock',
+                    icon: '📈'
+                },
+                {
+                    title: '금·은 가격 급락...비트코인 8만달러대 붕괴',
+                    source: '머니투데이',
+                    time: '32분 전',
+                    url: 'https://news.mt.co.kr/newsflash/',
+                    icon: '💰'
+                },
+                {
+                    title: '글로벌 디레버리징 본격화...위험자산 동반 하락',
+                    source: '한국경제',
+                    time: '1시간 전',
+                    url: 'https://www.hankyung.com/finance',
+                    icon: '🌍'
+                },
+                {
+                    title: '외국인 순매도 1조원 돌파...기관도 대량 매도',
+                    source: '뉴스1',
+                    time: '1시간 전',
+                    url: 'https://www.news1.kr/stock',
+                    icon: '📊'
+                },
+                {
+                    title: '원/달러 환율 1,460원 돌파...고환율 장기화 우려',
+                    source: '이데일리',
+                    time: '2시간 전',
+                    url: 'https://www.edaily.co.kr/news/finance',
+                    icon: '💵'
+                },
+                {
+                    title: '삼성전자 15만원대 추락...반도체 업종 동반 급락',
+                    source: '서울경제',
+                    time: '2시간 전',
+                    url: 'https://www.sedaily.com/Stock',
+                    icon: '🏢'
+                }
+            ];
+            
+            newsGrid.innerHTML = defaultNews.map(news => `
+                <a href="${news.url}" target="_blank" rel="noopener" class="news-card">
+                    <div class="news-image">${news.icon}</div>
+                    <div class="news-content">
+                        <div class="news-meta">
+                            <span class="news-source">${news.source}</span>
+                            <span class="news-time">${news.time}</span>
+                        </div>
+                        <h3 class="news-card-title">${news.title}</h3>
+                    </div>
+                </a>
+            `).join('');
         }
     </script>
 </body>

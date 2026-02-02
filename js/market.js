@@ -31,7 +31,9 @@ const Market = (function() {
         lastUpdate: null,
         retryCount: 0,
         pollTimer: null,
+        exchangePollTimer: null,  // 환율 전용 24시간 폴링
         previousData: {},
+        previousExchange: {},     // 환율 이전 데이터 (변동률 계산용)
         subscribers: []
     };
 
@@ -291,41 +293,112 @@ const Market = (function() {
     }
 
     /**
-     * Fetch exchange rates
+     * Fetch exchange rates (24시간 실시간)
      */
     async function fetchExchangeRates() {
         try {
-            // Try ExchangeRate-API (free tier)
+            // Try ExchangeRate-API (free tier) - 실시간 환율
             const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
             const data = await response.json();
             
             const krw = data.rates.KRW;
             const jpy = data.rates.JPY;
             const eur = data.rates.EUR;
+            const cny = data.rates.CNY;
             
-            return {
+            // 이전 데이터와 비교하여 변동률 계산
+            const prev = state.previousExchange;
+            
+            const calcChange = (current, key) => {
+                if (prev[key] && prev[key].rate) {
+                    const change = current - prev[key].rate;
+                    const changePercent = (change / prev[key].rate) * 100;
+                    return { change, changePercent };
+                }
+                return { change: 0, changePercent: 0 };
+            };
+            
+            const usdkrw = krw;
+            const jpykrw = krw / jpy * 100;  // Per 100 JPY
+            const eurkrw = krw / eur;
+            const cnykrw = krw / cny;
+            
+            const result = {
                 USDKRW: {
-                    rate: krw,
-                    change: 0,
-                    changePercent: 0,
+                    rate: usdkrw,
+                    ...calcChange(usdkrw, 'USDKRW'),
                     source: 'exchangerate-api'
                 },
                 JPYKRW: {
-                    rate: krw / jpy * 100,  // Per 100 JPY
-                    change: 0,
-                    changePercent: 0,
+                    rate: jpykrw,
+                    ...calcChange(jpykrw, 'JPYKRW'),
                     source: 'exchangerate-api'
                 },
                 EURKRW: {
-                    rate: krw / eur,
-                    change: 0,
-                    changePercent: 0,
+                    rate: eurkrw,
+                    ...calcChange(eurkrw, 'EURKRW'),
+                    source: 'exchangerate-api'
+                },
+                CNYKRW: {
+                    rate: cnykrw,
+                    ...calcChange(cnykrw, 'CNYKRW'),
                     source: 'exchangerate-api'
                 }
             };
+            
+            // 이전 데이터 저장
+            state.previousExchange = result;
+            
+            return result;
         } catch (e) {
             console.warn('Exchange rate fetch failed, using simulation:', e.message);
             return simulateExchangeRates();
+        }
+    }
+    
+    /**
+     * 환율 전용 폴링 (24시간, 5초마다)
+     */
+    async function fetchAndUpdateExchange() {
+        try {
+            const exchange = await fetchExchangeRates();
+            updateExchangeUI(exchange);
+            state.lastUpdate = new Date();
+            updateTimestamp();
+            
+            // DOM에 직접 업데이트
+            const updateEl = document.getElementById('last-update');
+            if (updateEl) {
+                updateEl.textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+            }
+        } catch (e) {
+            console.warn('Exchange update failed:', e.message);
+        }
+    }
+    
+    /**
+     * 환율 24시간 폴링 시작
+     */
+    function startExchangePolling() {
+        if (state.exchangePollTimer) {
+            clearInterval(state.exchangePollTimer);
+        }
+        
+        // 초기 fetch
+        fetchAndUpdateExchange();
+        
+        // 5초마다 환율 업데이트 (24시간)
+        state.exchangePollTimer = setInterval(fetchAndUpdateExchange, 5000);
+        console.log('💱 Exchange rate 24h polling started (5s interval)');
+    }
+    
+    /**
+     * 환율 폴링 중지
+     */
+    function stopExchangePolling() {
+        if (state.exchangePollTimer) {
+            clearInterval(state.exchangePollTimer);
+            state.exchangePollTimer = null;
         }
     }
 
@@ -758,19 +831,24 @@ const Market = (function() {
             updateUI(cached);
         }
 
-        // Start real-time polling
+        // Start real-time polling (주식: 장 시간만)
         startPolling();
+        
+        // Start exchange rate polling (환율: 24시간)
+        startExchangePolling();
 
         // Handle visibility changes
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopPolling();
+                stopExchangePolling();
             } else {
                 startPolling();
+                startExchangePolling();
             }
         });
 
-        console.log('✅ Market module initialized');
+        console.log('✅ Market module initialized (주식 + 환율 24h)');
 
         return {
             refresh: fetchAndUpdate,

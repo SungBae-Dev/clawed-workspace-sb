@@ -595,7 +595,7 @@
         <!-- Exchange Rate Banner -->
         <div class="exchange-rate-banner">
             <div class="rate-item">
-                <span class="rate-label">USD/KRW 환율</span>
+                <span class="rate-label">USDT/KRW (업비트)</span>
                 <span class="rate-value" id="usd-krw-rate">--</span>
             </div>
             <div class="rate-item">
@@ -721,28 +721,25 @@
         let wsBybit = null;
 
         // ============================================
-        // Exchange Rate
+        // Exchange Rate (using Upbit USDT/KRW for real-time)
         // ============================================
+        function updateExchangeRateDisplay() {
+            document.getElementById('usd-krw-rate').textContent = 
+                '₩' + state.exchangeRate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+        }
+
         async function fetchExchangeRate() {
+            // Fallback only - real rate comes from Upbit WebSocket
             try {
-                // Using exchangerate-api (free tier)
                 const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 const data = await response.json();
-                state.exchangeRate = data.rates.KRW;
-                document.getElementById('usd-krw-rate').textContent = 
-                    '₩' + state.exchangeRate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-            } catch (error) {
-                console.error('Exchange rate fetch failed:', error);
-                // Fallback: try another API
-                try {
-                    const res = await fetch('https://open.er-api.com/v6/latest/USD');
-                    const data = await res.json();
+                // Only use if Upbit hasn't provided rate yet
+                if (state.exchangeRate === 1450) {
                     state.exchangeRate = data.rates.KRW;
-                    document.getElementById('usd-krw-rate').textContent = 
-                        '₩' + state.exchangeRate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-                } catch (e) {
-                    console.error('Fallback exchange rate failed:', e);
+                    updateExchangeRateDisplay();
                 }
+            } catch (error) {
+                console.error('Fallback exchange rate failed:', error);
             }
         }
 
@@ -750,7 +747,8 @@
         // Upbit WebSocket
         // ============================================
         function connectUpbit() {
-            const markets = COINS.map(c => `KRW-${c.symbol}`);
+            // Include USDT for real-time exchange rate
+            const markets = [...COINS.map(c => `KRW-${c.symbol}`), 'KRW-USDT'];
             
             wsUpbit = new WebSocket('wss://api.upbit.com/websocket/v1');
             
@@ -770,7 +768,17 @@
                 const text = await blob.text();
                 const data = JSON.parse(text);
                 
-                const symbol = data.code.replace('KRW-', '');
+                const code = data.code;
+                
+                // Handle USDT/KRW as exchange rate
+                if (code === 'KRW-USDT') {
+                    state.exchangeRate = data.trade_price;
+                    updateExchangeRateDisplay();
+                    updateUI();
+                    return;
+                }
+                
+                const symbol = code.replace('KRW-', '');
                 state.prices.upbit[symbol] = data.trade_price;
                 updateUI();
             };
@@ -1128,7 +1136,7 @@
 
             // Fetch exchange rate
             await fetchExchangeRate();
-            setInterval(fetchExchangeRate, 60000); // Update every minute
+            // Fallback only - main rate comes from Upbit USDT/KRW WebSocket
 
             // Connect to all exchanges
             connectUpbit();

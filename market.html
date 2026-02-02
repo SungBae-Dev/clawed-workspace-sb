@@ -143,6 +143,8 @@
             background: var(--bg-card);
             border-radius: 12px;
             border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .last-update {
@@ -151,10 +153,14 @@
         }
 
         .connection-status {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-size: 0.85rem;
+            padding: 4px 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 100px;
+            white-space: nowrap;
         }
 
         .connection-status.connected {
@@ -163,6 +169,13 @@
 
         .connection-status.disconnected {
             color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .connection-status .status-dot {
+            width: 6px;
+            height: 6px;
+            flex-shrink: 0;
         }
 
         /* Main Grid */

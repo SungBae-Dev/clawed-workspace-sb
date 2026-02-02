@@ -153,8 +153,7 @@
         }
 
         .connection-status {
-            display: flex;
-            flex-direction: row;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             font-size: 0.85rem;
@@ -172,11 +171,14 @@
         }
         
         .connection-status .status-dot {
+            display: inline-block;
             width: 8px;
             height: 8px;
             min-width: 8px;
+            min-height: 8px;
             border-radius: 50%;
             background: currentColor;
+            flex-shrink: 0;
         }
 
         /* Main Grid */

@@ -941,35 +941,14 @@
             <div class="news-header">
                 <h2 class="news-title">📰 오늘의 주요 뉴스</h2>
                 <div class="news-filter">
-                    <button class="filter-btn active">전체</button>
-                    <button class="filter-btn">증시</button>
-                    <button class="filter-btn">환율</button>
-                    <button class="filter-btn">글로벌</button>
+                    <button class="filter-btn active" data-category="all">전체</button>
+                    <button class="filter-btn" data-category="stock">증시</button>
+                    <button class="filter-btn" data-category="forex">환율</button>
+                    <button class="filter-btn" data-category="global">글로벌</button>
                 </div>
             </div>
             <div class="news-grid" id="news-grid">
-                <!-- 뉴스는 news.js에서 동적으로 로드됩니다 -->
-                <div class="news-card skeleton-card">
-                    <div class="news-image skeleton"></div>
-                    <div class="news-content">
-                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
-                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
-                    </div>
-                </div>
-                <div class="news-card skeleton-card">
-                    <div class="news-image skeleton"></div>
-                    <div class="news-content">
-                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
-                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
-                    </div>
-                </div>
-                <div class="news-card skeleton-card">
-                    <div class="news-image skeleton"></div>
-                    <div class="news-content">
-                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
-                        <div class="skeleton" style="height: 20px; width: 100%;"></div>
-                    </div>
-                </div>
+                <!-- 로딩 중 -->
             </div>
         </section>
     </main>
@@ -1010,87 +989,47 @@
         // Update last update time
         document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false });
 
-        // Tab switching
-        document.querySelectorAll('.mover-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.mover-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                // Load different data based on tab
-            });
-        });
+        // ========== 뉴스 데이터 ==========
+        const allNews = {
+            all: [
+                { title: '코스피 5000선 붕괴...2025년 4월 이후 최대 하락률', source: '연합뉴스', time: '15분 전', url: 'https://www.yna.co.kr/economy/stock', icon: '📈', category: 'stock' },
+                { title: '금·은 가격 급락...비트코인 8만달러대 붕괴', source: '머니투데이', time: '32분 전', url: 'https://news.mt.co.kr/newsflash/', icon: '💰', category: 'global' },
+                { title: '글로벌 디레버리징 본격화...위험자산 동반 하락', source: '한국경제', time: '1시간 전', url: 'https://www.hankyung.com/finance', icon: '🌍', category: 'global' },
+                { title: '외국인 순매도 1조원 돌파...기관도 대량 매도', source: '뉴스1', time: '1시간 전', url: 'https://www.news1.kr/stock', icon: '📊', category: 'stock' },
+                { title: '원/달러 환율 1,460원 돌파...고환율 장기화 우려', source: '이데일리', time: '2시간 전', url: 'https://www.edaily.co.kr/news/finance', icon: '💵', category: 'forex' },
+                { title: '삼성전자 15만원대 추락...반도체 업종 동반 급락', source: '서울경제', time: '2시간 전', url: 'https://www.sedaily.com/Stock', icon: '🏢', category: 'stock' }
+            ]
+        };
 
-        // Filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
+        // ========== 상승/하락 데이터 ==========
+        const moversData = {
+            up: [
+                { rank: 1, name: '쌍용정보통신', change: '+29.97%' },
+                { rank: 2, name: '바이오스마트', change: '+29.98%' },
+                { rank: 3, name: '쌍표시멘트', change: '+30.00%' },
+                { rank: 4, name: '신원', change: '+29.89%' },
+                { rank: 5, name: '아이진', change: '+29.84%' }
+            ],
+            down: [
+                { rank: 1, name: '한미반도체', change: '-11.33%' },
+                { rank: 2, name: '삼성전자', change: '-6.29%' },
+                { rank: 3, name: 'SK하이닉스', change: '-5.14%' },
+                { rank: 4, name: '삼성SDI', change: '-4.94%' },
+                { rank: 5, name: 'LG에너지솔루션', change: '-4.60%' }
+            ]
+        };
 
-        // Initialize market data
-        if (typeof Market !== 'undefined') {
-            Market.init();
-        }
-        
-        // Initialize news with dynamic loading
-        if (typeof NewsModule !== 'undefined') {
-            NewsModule.initNews('news-grid');
-        } else {
-            // Fallback: 기본 뉴스 데이터 표시
-            loadFallbackNews();
-        }
-        
-        // Fallback news loader
-        function loadFallbackNews() {
+        // ========== 뉴스 렌더링 ==========
+        function renderNews(category) {
             const newsGrid = document.getElementById('news-grid');
             if (!newsGrid) return;
             
-            const defaultNews = [
-                {
-                    title: '코스피 5000선 붕괴...2025년 4월 이후 최대 하락률',
-                    source: '연합뉴스',
-                    time: '15분 전',
-                    url: 'https://www.yna.co.kr/economy/stock',
-                    icon: '📈'
-                },
-                {
-                    title: '금·은 가격 급락...비트코인 8만달러대 붕괴',
-                    source: '머니투데이',
-                    time: '32분 전',
-                    url: 'https://news.mt.co.kr/newsflash/',
-                    icon: '💰'
-                },
-                {
-                    title: '글로벌 디레버리징 본격화...위험자산 동반 하락',
-                    source: '한국경제',
-                    time: '1시간 전',
-                    url: 'https://www.hankyung.com/finance',
-                    icon: '🌍'
-                },
-                {
-                    title: '외국인 순매도 1조원 돌파...기관도 대량 매도',
-                    source: '뉴스1',
-                    time: '1시간 전',
-                    url: 'https://www.news1.kr/stock',
-                    icon: '📊'
-                },
-                {
-                    title: '원/달러 환율 1,460원 돌파...고환율 장기화 우려',
-                    source: '이데일리',
-                    time: '2시간 전',
-                    url: 'https://www.edaily.co.kr/news/finance',
-                    icon: '💵'
-                },
-                {
-                    title: '삼성전자 15만원대 추락...반도체 업종 동반 급락',
-                    source: '서울경제',
-                    time: '2시간 전',
-                    url: 'https://www.sedaily.com/Stock',
-                    icon: '🏢'
-                }
-            ];
+            let newsToShow = allNews.all;
+            if (category && category !== 'all') {
+                newsToShow = allNews.all.filter(n => n.category === category);
+            }
             
-            newsGrid.innerHTML = defaultNews.map(news => `
+            newsGrid.innerHTML = newsToShow.map(news => `
                 <a href="${news.url}" target="_blank" rel="noopener" class="news-card">
                     <div class="news-image">${news.icon}</div>
                     <div class="news-content">
@@ -1102,6 +1041,55 @@
                     </div>
                 </a>
             `).join('');
+        }
+
+        // ========== 상승/하락 렌더링 ==========
+        function renderMovers(type) {
+            const moversList = document.getElementById('movers-list');
+            if (!moversList) return;
+            
+            const data = moversData[type] || moversData.up;
+            const colorClass = type === 'up' ? 'up' : 'down';
+            
+            moversList.innerHTML = data.map(item => `
+                <div class="mover-item">
+                    <span class="mover-rank">${item.rank}</span>
+                    <span class="mover-name">${item.name}</span>
+                    <span class="mover-change ${colorClass}">${item.change}</span>
+                </div>
+            `).join('');
+        }
+
+        // ========== 탭 전환 (상승/하락) ==========
+        document.querySelectorAll('.mover-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.mover-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const type = tab.dataset.type;
+                renderMovers(type);
+            });
+        });
+
+        // ========== 뉴스 필터 ==========
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.dataset.category;
+                renderNews(category);
+            });
+        });
+
+        // ========== 초기화 ==========
+        // 뉴스 로드
+        renderNews('all');
+        
+        // 상승 종목 로드
+        renderMovers('up');
+        
+        // Market 모듈 초기화
+        if (typeof Market !== 'undefined') {
+            Market.init();
         }
     </script>
 </body>

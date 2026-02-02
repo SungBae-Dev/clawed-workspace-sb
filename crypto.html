@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Dashboard - Clawed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a24;
+            --accent-primary: #f7931a;
+            --accent-secondary: #627eea;
+            --color-up: #22c55e;
+            --color-down: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.3);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent-primary);
+        }
+
+        /* Ticker Tape Container */
+        .ticker-container {
+            width: 100%;
+            height: 46px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .stat-card.btc {
+            border-left: 3px solid #f7931a;
+        }
+
+        .stat-card.eth {
+            border-left: 3px solid #627eea;
+        }
+
+        .stat-card.dominance {
+            border-left: 3px solid #22c55e;
+        }
+
+        .stat-card.fear {
+            border-left: 3px solid #ef4444;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-change {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .stat-change.up { color: var(--color-up); }
+        .stat-change.down { color: var(--color-down); }
+
+        /* Chart Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .chart-body {
+            height: 500px;
+        }
+
+        .chart-body-small {
+            height: 300px;
+        }
+
+        /* Sidebar Charts */
+        .sidebar-charts {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Market Overview */
+        .market-overview {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .overview-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .overview-body {
+            height: 400px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .chart-body {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">🐾 Clawed Crypto</a>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="board.html">Board</a>
+                <a href="market.html">Market</a>
+                <a href="crypto.html" class="active">Crypto</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- TradingView Ticker Tape -->
+    <div class="ticker-container">
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+                "symbols": [
+                    {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+                    {"proName": "BITSTAMP:ETHUSD", "title": "Ethereum"},
+                    {"proName": "BINANCE:SOLUSDT", "title": "Solana"},
+                    {"proName": "BINANCE:BNBUSDT", "title": "BNB"},
+                    {"proName": "BINANCE:XRPUSDT", "title": "XRP"},
+                    {"proName": "BINANCE:ADAUSDT", "title": "Cardano"},
+                    {"proName": "CRYPTOCAP:BTC.D", "title": "BTC Dominance"}
+                ],
+                "showSymbolLogo": true,
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "displayMode": "adaptive",
+                "locale": "kr"
+            }
+            </script>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card btc">
+                <div class="stat-icon">₿</div>
+                <div class="stat-label">Bitcoin (BTC)</div>
+                <div class="stat-value" id="btc-price">$--,---</div>
+                <div class="stat-change" id="btc-change">--</div>
+            </div>
+            <div class="stat-card eth">
+                <div class="stat-icon">Ξ</div>
+                <div class="stat-label">Ethereum (ETH)</div>
+                <div class="stat-value" id="eth-price">$--,---</div>
+                <div class="stat-change" id="eth-change">--</div>
+            </div>
+            <div class="stat-card dominance">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">BTC Dominance</div>
+                <div class="stat-value" id="btc-dominance">--.--</div>
+                <div class="stat-change">시장 점유율</div>
+            </div>
+            <div class="stat-card fear">
+                <div class="stat-icon">😰</div>
+                <div class="stat-label">Fear & Greed Index</div>
+                <div class="stat-value" id="fear-index">--</div>
+                <div class="stat-change" id="fear-label">--</div>
+            </div>
+        </div>
+
+        <!-- Chart Grid -->
+        <div class="chart-grid">
+            <!-- Main BTC Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <span>₿</span> Bitcoin / USD
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <div class="tradingview-widget-container" style="height:100%;width:100%">
+                        <div id="tradingview_btc" style="height:100%;width:100%"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                        <script type="text/javascript">
+                        new TradingView.widget({
+                            "autosize": true,
+                            "symbol": "BITSTAMP:BTCUSD",
+                            "interval": "60",
+                            "timezone": "Asia/Seoul",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "kr",
+                            "toolbar_bg": "#0a0a0f",
+                            "enable_publishing": false,
+                            "hide_top_toolbar": false,
+                            "hide_legend": false,
+                            "save_image": false,
+                            "container_id": "tradingview_btc",
+                            "backgroundColor": "#12121a"
+                        });
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar-charts">
+                <!-- ETH Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <span>Ξ</span> Ethereum / USD
+                        </div>
+                    </div>
+                    <div class="chart-body-small">
+                        <div class="tradingview-widget-container" style="height:100%;width:100%">
+                            <div id="tradingview_eth" style="height:100%;width:100%"></div>
+                            <script type="text/javascript">
+                            new TradingView.widget({
+                                "autosize": true,
+                                "symbol": "BITSTAMP:ETHUSD",
+                                "interval": "60",
+                                "timezone": "Asia/Seoul",
+                                "theme": "dark",
+                                "style": "3",
+                                "locale": "kr",
+                                "toolbar_bg": "#0a0a0f",
+                                "enable_publishing": false,
+                                "hide_top_toolbar": true,
+                                "hide_legend": true,
+                                "save_image": false,
+                                "container_id": "tradingview_eth",
+                                "backgroundColor": "#12121a"
+                            });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BTC Dominance Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <span>📊</span> BTC Dominance
+                        </div>
+                    </div>
+                    <div class="chart-body-small">
+                        <div class="tradingview-widget-container" style="height:100%;width:100%">
+                            <div id="tradingview_dominance" style="height:100%;width:100%"></div>
+                            <script type="text/javascript">
+                            new TradingView.widget({
+                                "autosize": true,
+                                "symbol": "CRYPTOCAP:BTC.D",
+                                "interval": "D",
+                                "timezone": "Asia/Seoul",
+                                "theme": "dark",
+                                "style": "3",
+                                "locale": "kr",
+                                "toolbar_bg": "#0a0a0f",
+                                "enable_publishing": false,
+                                "hide_top_toolbar": true,
+                                "hide_legend": true,
+                                "save_image": false,
+                                "container_id": "tradingview_dominance",
+                                "backgroundColor": "#12121a"
+                            });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Overview -->
+        <div class="market-overview">
+            <div class="overview-header">📈 Crypto Market Overview</div>
+            <div class="overview-body">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+                    {
+                        "width": "100%",
+                        "height": "100%",
+                        "defaultColumn": "overview",
+                        "screener_type": "crypto_mkt",
+                        "displayCurrency": "USD",
+                        "colorTheme": "dark",
+                        "locale": "kr",
+                        "isTransparent": true
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Fetch crypto prices from CoinGecko API (free, no key needed)
+        async function fetchCryptoPrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+                const data = await res.json();
+                
+                // Bitcoin
+                const btcPrice = data.bitcoin.usd;
+                const btcChange = data.bitcoin.usd_24h_change;
+                document.getElementById('btc-price').textContent = '$' + btcPrice.toLocaleString();
+                const btcChangeEl = document.getElementById('btc-change');
+                btcChangeEl.textContent = (btcChange >= 0 ? '+' : '') + btcChange.toFixed(2) + '% (24h)';
+                btcChangeEl.className = 'stat-change ' + (btcChange >= 0 ? 'up' : 'down');
+                
+                // Ethereum
+                const ethPrice = data.ethereum.usd;
+                const ethChange = data.ethereum.usd_24h_change;
+                document.getElementById('eth-price').textContent = '$' + ethPrice.toLocaleString();
+                const ethChangeEl = document.getElementById('eth-change');
+                ethChangeEl.textContent = (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '% (24h)';
+                ethChangeEl.className = 'stat-change ' + (ethChange >= 0 ? 'up' : 'down');
+                
+            } catch (e) {
+                console.error('Crypto price fetch failed:', e);
+            }
+        }
+        
+        // Fetch BTC Dominance from CoinGecko
+        async function fetchDominance() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/global');
+                const data = await res.json();
+                const dominance = data.data.market_cap_percentage.btc;
+                document.getElementById('btc-dominance').textContent = dominance.toFixed(2) + '%';
+            } catch (e) {
+                console.error('Dominance fetch failed:', e);
+            }
+        }
+        
+        // Fetch Fear & Greed Index
+        async function fetchFearGreed() {
+            try {
+                const res = await fetch('https://api.alternative.me/fng/');
+                const data = await res.json();
+                const value = parseInt(data.data[0].value);
+                const label = data.data[0].value_classification;
+                
+                document.getElementById('fear-index').textContent = value;
+                document.getElementById('fear-label').textContent = label;
+                
+                const fearCard = document.querySelector('.stat-card.fear');
+                if (value <= 25) {
+                    fearCard.querySelector('.stat-icon').textContent = '😱';
+                } else if (value <= 45) {
+                    fearCard.querySelector('.stat-icon').textContent = '😰';
+                } else if (value <= 55) {
+                    fearCard.querySelector('.stat-icon').textContent = '😐';
+                } else if (value <= 75) {
+                    fearCard.querySelector('.stat-icon').textContent = '😊';
+                } else {
+                    fearCard.querySelector('.stat-icon').textContent = '🤑';
+                }
+            } catch (e) {
+                console.error('Fear & Greed fetch failed:', e);
+            }
+        }
+        
+        // Initial fetch
+        fetchCryptoPrices();
+        fetchDominance();
+        fetchFearGreed();
+        
+        // Update every 30 seconds
+        setInterval(fetchCryptoPrices, 30000);
+        setInterval(fetchDominance, 60000);
+        setInterval(fetchFearGreed, 300000);
+        
+        console.log('🪙 Crypto dashboard initialized');
+    </script>
+</body>
+</html>

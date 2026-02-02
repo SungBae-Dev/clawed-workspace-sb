@@ -1,25 +1,32 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Dashboard - Clawed</title>
+    <title>Crypto Dashboard | Clawed Workspace</title>
+    <meta name="description" content="Real-time cryptocurrency dashboard with live charts and market data">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-dark: #0a0a0f;
-            --bg-card: #12121a;
-            --bg-hover: #1a1a24;
-            --accent-primary: #f7931a;
-            --accent-secondary: #627eea;
-            --color-up: #22c55e;
-            --color-down: #ef4444;
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --text-muted: rgba(255, 255, 255, 0.3);
-            --border-color: rgba(255, 255, 255, 0.08);
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --accent-glow: rgba(88, 166, 255, 0.4);
+            --border-color: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+            --btc-color: #f7931a;
+            --eth-color: #627eea;
         }
 
         * {
@@ -28,139 +35,297 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Space Grotesk', -apple-system, sans-serif;
-            background: var(--bg-dark);
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
         }
 
         /* Header */
-        .header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            padding: 16px 24px;
-            position: sticky;
+        header {
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 16px 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
         .header-content {
-            max-width: 1600px;
-            margin: 0 auto;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 24px;
+            align-items: center;
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            transition: color 0.2s ease;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 24px;
+        .logo:hover {
+            color: var(--accent);
         }
 
-        .nav-links a {
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        nav a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            position: relative;
         }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--accent-primary);
+        nav a:hover, nav a.active {
+            color: var(--accent);
+        }
+
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
         }
 
         /* Ticker Tape Container */
         .ticker-container {
-            width: 100%;
-            height: 46px;
-            background: var(--bg-card);
+            margin-top: 73px;
+            background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* Main Container */
-        .container {
+        /* Main Content */
+        main {
+            padding: 24px;
+            min-height: calc(100vh - 73px);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
             max-width: 1600px;
             margin: 0 auto;
-            padding: 24px;
         }
 
-        /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .stat-card {
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header .badge {
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Cards */
+        .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             transition: all 0.3s ease;
         }
 
-        .stat-card:hover {
-            border-color: var(--border-color);
-            transform: translateY(-2px);
+        .card:hover {
+            border-color: rgba(88, 166, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .stat-card.btc {
-            border-left: 3px solid #f7931a;
+        /* Price Cards Grid */
+        .price-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
         }
 
-        .stat-card.eth {
-            border-left: 3px solid #627eea;
+        .price-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .stat-card.dominance {
-            border-left: 3px solid #22c55e;
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
         }
 
-        .stat-card.fear {
-            border-left: 3px solid #ef4444;
+        .price-card.btc::before {
+            background: linear-gradient(90deg, var(--btc-color), #ffa500);
         }
 
-        .stat-icon {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
+        .price-card.eth::before {
+            background: linear-gradient(90deg, var(--eth-color), #8c9eff);
         }
 
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
+        .price-card.dominance::before {
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
         }
 
-        .stat-value {
-            font-family: 'JetBrains Mono', monospace;
+        .price-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(88, 166, 255, 0.3);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .price-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .crypto-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.5rem;
             font-weight: 700;
         }
 
-        .stat-change {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            margin-top: 4px;
+        .crypto-icon.btc {
+            background: rgba(247, 147, 26, 0.15);
+            color: var(--btc-color);
         }
 
-        .stat-change.up { color: var(--color-up); }
-        .stat-change.down { color: var(--color-down); }
+        .crypto-icon.eth {
+            background: rgba(98, 126, 234, 0.15);
+            color: var(--eth-color);
+        }
 
-        /* Chart Grid */
-        .chart-grid {
+        .crypto-icon.dom {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent);
+        }
+
+        .crypto-name {
+            flex: 1;
+        }
+
+        .crypto-name h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .crypto-name span {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .price-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .price-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .price-change.positive {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--success);
+        }
+
+        .price-change.negative {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--danger);
+        }
+
+        .price-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Chart Sections */
+        .charts-row {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 24px;
@@ -183,31 +348,31 @@
         }
 
         .chart-title {
-            font-size: 1rem;
-            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .chart-title img {
-            width: 24px;
-            height: 24px;
+        .chart-title h3 {
+            font-size: 1rem;
+            font-weight: 600;
         }
 
-        .chart-body {
+        .chart-title .symbol {
+            background: var(--bg-tertiary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        .chart-container {
             height: 500px;
         }
 
-        .chart-body-small {
+        .chart-container.mini {
             height: 300px;
-        }
-
-        /* Sidebar Charts */
-        .sidebar-charts {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
         }
 
         /* Market Overview */
@@ -218,57 +383,181 @@
             overflow: hidden;
         }
 
-        .overview-header {
-            padding: 16px 20px;
+        .market-header {
+            padding: 20px 24px;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .market-header h3 {
+            font-size: 1.25rem;
             font-weight: 600;
         }
 
-        .overview-body {
+        .market-widget {
             height: 400px;
+        }
+
+        /* Widget Containers */
+        .tradingview-widget-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Loading State */
+        .loading-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .loading-placeholder::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            margin-right: 12px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pulse Animation for Live Indicator */
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 24px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .footer-text a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
         }
 
         /* Responsive */
         @media (max-width: 1200px) {
-            .chart-grid {
+            .charts-row {
                 grid-template-columns: 1fr;
-            }
-            
-            .stats-row {
-                grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 768px) {
-            .stats-row {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            nav ul {
+                gap: 20px;
+            }
+
+            .ticker-container {
+                margin-top: 120px;
+            }
+
+            main {
+                padding: 16px;
+            }
+
+            .price-cards {
                 grid-template-columns: 1fr;
             }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .chart-body {
+
+            .chart-container {
                 height: 400px;
+            }
+
+            .price-value {
+                font-size: 1.5rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul {
+                gap: 12px;
+                font-size: 0.875rem;
+            }
+
+            .chart-container {
+                height: 350px;
+            }
+
+            .chart-container.mini {
+                height: 250px;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <a href="index.html" class="logo">🐾 Clawed Crypto</a>
-            <nav class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="board.html">Board</a>
-                <a href="market.html">Market</a>
-                <a href="crypto.html" class="active">Crypto</a>
-            </nav>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🐾</span>
+                    <span>Clawed</span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="board.html">Board</a></li>
+                        <li><a href="market.html">Market</a></li>
+                        <li><a href="crypto.html" class="active">Crypto</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <!-- TradingView Ticker Tape -->
+    <!-- Ticker Tape Widget -->
     <div class="ticker-container">
         <div class="tradingview-widget-container">
             <div class="tradingview-widget-container__widget"></div>
@@ -281,253 +570,641 @@
                     {"proName": "BINANCE:BNBUSDT", "title": "BNB"},
                     {"proName": "BINANCE:XRPUSDT", "title": "XRP"},
                     {"proName": "BINANCE:ADAUSDT", "title": "Cardano"},
+                    {"proName": "BINANCE:DOGEUSDT", "title": "Dogecoin"},
+                    {"proName": "BINANCE:DOTUSDT", "title": "Polkadot"},
                     {"proName": "CRYPTOCAP:BTC.D", "title": "BTC Dominance"}
                 ],
                 "showSymbolLogo": true,
-                "colorTheme": "dark",
                 "isTransparent": true,
                 "displayMode": "adaptive",
-                "locale": "kr"
+                "colorTheme": "dark",
+                "locale": "en"
             }
             </script>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="container">
-        <!-- Stats Row -->
-        <div class="stats-row">
-            <div class="stat-card btc">
-                <div class="stat-icon">₿</div>
-                <div class="stat-label">Bitcoin (BTC)</div>
-                <div class="stat-value" id="btc-price">$--,---</div>
-                <div class="stat-change" id="btc-change">--</div>
+    <main>
+        <div class="dashboard-grid">
+            <!-- Section Header -->
+            <div class="section-header">
+                <h2>📊 Cryptocurrency Dashboard</h2>
+                <span class="badge">Live</span>
             </div>
-            <div class="stat-card eth">
-                <div class="stat-icon">Ξ</div>
-                <div class="stat-label">Ethereum (ETH)</div>
-                <div class="stat-value" id="eth-price">$--,---</div>
-                <div class="stat-change" id="eth-change">--</div>
-            </div>
-            <div class="stat-card dominance">
-                <div class="stat-icon">📊</div>
-                <div class="stat-label">BTC Dominance</div>
-                <div class="stat-value" id="btc-dominance">--.--</div>
-                <div class="stat-change">시장 점유율</div>
-            </div>
-            <div class="stat-card fear">
-                <div class="stat-icon">😰</div>
-                <div class="stat-label">Fear & Greed Index</div>
-                <div class="stat-value" id="fear-index">--</div>
-                <div class="stat-change" id="fear-label">--</div>
-            </div>
-        </div>
 
-        <!-- Chart Grid -->
-        <div class="chart-grid">
-            <!-- Main BTC Chart -->
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div class="chart-title">
-                        <span>₿</span> Bitcoin / USD
+            <!-- Price Cards -->
+            <div class="price-cards">
+                <!-- Bitcoin Card -->
+                <div class="price-card btc">
+                    <div class="price-card-header">
+                        <div class="crypto-icon btc">₿</div>
+                        <div class="crypto-name">
+                            <h3>Bitcoin</h3>
+                            <span>BTC/USD</span>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            Live
+                        </div>
+                    </div>
+                    <!-- TradingView Mini Symbol Widget for BTC -->
+                    <div class="tradingview-widget-container" style="height: 140px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                        {
+                            "symbol": "BITSTAMP:BTCUSD",
+                            "width": "100%",
+                            "isTransparent": true,
+                            "colorTheme": "dark",
+                            "locale": "en"
+                        }
+                        </script>
                     </div>
                 </div>
-                <div class="chart-body">
-                    <div class="tradingview-widget-container" style="height:100%;width:100%">
-                        <div id="tradingview_btc" style="height:100%;width:100%"></div>
-                        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                        <script type="text/javascript">
-                        new TradingView.widget({
-                            "autosize": true,
-                            "symbol": "BITSTAMP:BTCUSD",
-                            "interval": "60",
-                            "timezone": "Asia/Seoul",
-                            "theme": "dark",
-                            "style": "1",
-                            "locale": "kr",
-                            "toolbar_bg": "#0a0a0f",
-                            "enable_publishing": false,
-                            "hide_top_toolbar": false,
-                            "hide_legend": false,
-                            "save_image": false,
-                            "container_id": "tradingview_btc",
-                            "backgroundColor": "#12121a"
-                        });
+
+                <!-- Ethereum Card -->
+                <div class="price-card eth">
+                    <div class="price-card-header">
+                        <div class="crypto-icon eth">Ξ</div>
+                        <div class="crypto-name">
+                            <h3>Ethereum</h3>
+                            <span>ETH/USD</span>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            Live
+                        </div>
+                    </div>
+                    <!-- TradingView Mini Symbol Widget for ETH -->
+                    <div class="tradingview-widget-container" style="height: 140px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                        {
+                            "symbol": "BITSTAMP:ETHUSD",
+                            "width": "100%",
+                            "isTransparent": true,
+                            "colorTheme": "dark",
+                            "locale": "en"
+                        }
+                        </script>
+                    </div>
+                </div>
+
+                <!-- Bitcoin Dominance Card -->
+                <div class="price-card dominance">
+                    <div class="price-card-header">
+                        <div class="crypto-icon dom">%</div>
+                        <div class="crypto-name">
+                            <h3>BTC Dominance</h3>
+                            <span>BTC.D</span>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            Live
+                        </div>
+                    </div>
+                    <!-- TradingView Mini Symbol Widget for BTC.D -->
+                    <div class="tradingview-widget-container" style="height: 140px;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                        {
+                            "symbol": "CRYPTOCAP:BTC.D",
+                            "width": "100%",
+                            "isTransparent": true,
+                            "colorTheme": "dark",
+                            "locale": "en"
+                        }
                         </script>
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="sidebar-charts">
-                <!-- ETH Chart -->
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <!-- Main BTC Chart -->
                 <div class="chart-card">
                     <div class="chart-header">
                         <div class="chart-title">
-                            <span>Ξ</span> Ethereum / USD
+                            <h3>Bitcoin Chart</h3>
+                            <span class="symbol">BTC/USD</span>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            Real-time
                         </div>
                     </div>
-                    <div class="chart-body-small">
+                    <div class="chart-container">
+                        <!-- TradingView Advanced Chart Widget -->
                         <div class="tradingview-widget-container" style="height:100%;width:100%">
-                            <div id="tradingview_eth" style="height:100%;width:100%"></div>
-                            <script type="text/javascript">
-                            new TradingView.widget({
+                            <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                            {
                                 "autosize": true,
-                                "symbol": "BITSTAMP:ETHUSD",
+                                "symbol": "BITSTAMP:BTCUSD",
                                 "interval": "60",
-                                "timezone": "Asia/Seoul",
+                                "timezone": "Etc/UTC",
                                 "theme": "dark",
-                                "style": "3",
-                                "locale": "kr",
-                                "toolbar_bg": "#0a0a0f",
-                                "enable_publishing": false,
-                                "hide_top_toolbar": true,
-                                "hide_legend": true,
+                                "style": "1",
+                                "locale": "en",
+                                "backgroundColor": "rgba(28, 33, 40, 1)",
+                                "gridColor": "rgba(48, 54, 61, 0.5)",
+                                "hide_top_toolbar": false,
+                                "hide_legend": false,
+                                "allow_symbol_change": true,
                                 "save_image": false,
-                                "container_id": "tradingview_eth",
-                                "backgroundColor": "#12121a"
-                            });
+                                "calendar": false,
+                                "support_host": "https://www.tradingview.com"
+                            }
                             </script>
                         </div>
                     </div>
                 </div>
 
-                <!-- BTC Dominance Chart -->
+                <!-- Mini ETH Chart -->
                 <div class="chart-card">
                     <div class="chart-header">
                         <div class="chart-title">
-                            <span>📊</span> BTC Dominance
+                            <h3>Ethereum Chart</h3>
+                            <span class="symbol">ETH/USD</span>
                         </div>
                     </div>
-                    <div class="chart-body-small">
+                    <div class="chart-container mini">
+                        <!-- TradingView Mini Chart Widget -->
                         <div class="tradingview-widget-container" style="height:100%;width:100%">
-                            <div id="tradingview_dominance" style="height:100%;width:100%"></div>
-                            <script type="text/javascript">
-                            new TradingView.widget({
+                            <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                            {
+                                "symbol": "BITSTAMP:ETHUSD",
+                                "width": "100%",
+                                "height": "100%",
+                                "locale": "en",
+                                "dateRange": "12M",
+                                "colorTheme": "dark",
+                                "isTransparent": true,
                                 "autosize": true,
+                                "largeChartUrl": ""
+                            }
+                            </script>
+                        </div>
+                    </div>
+                    <!-- BTC Dominance Mini Chart -->
+                    <div class="chart-header" style="border-top: 1px solid var(--border-color);">
+                        <div class="chart-title">
+                            <h3>BTC Dominance</h3>
+                            <span class="symbol">BTC.D</span>
+                        </div>
+                    </div>
+                    <div class="chart-container mini">
+                        <div class="tradingview-widget-container" style="height:100%;width:100%">
+                            <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                            {
                                 "symbol": "CRYPTOCAP:BTC.D",
-                                "interval": "D",
-                                "timezone": "Asia/Seoul",
-                                "theme": "dark",
-                                "style": "3",
-                                "locale": "kr",
-                                "toolbar_bg": "#0a0a0f",
-                                "enable_publishing": false,
-                                "hide_top_toolbar": true,
-                                "hide_legend": true,
-                                "save_image": false,
-                                "container_id": "tradingview_dominance",
-                                "backgroundColor": "#12121a"
-                            });
+                                "width": "100%",
+                                "height": "100%",
+                                "locale": "en",
+                                "dateRange": "12M",
+                                "colorTheme": "dark",
+                                "isTransparent": true,
+                                "autosize": true,
+                                "largeChartUrl": ""
+                            }
                             </script>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Market Overview -->
-        <div class="market-overview">
-            <div class="overview-header">📈 Crypto Market Overview</div>
-            <div class="overview-body">
-                <div class="tradingview-widget-container" style="height:100%;width:100%">
-                    <div class="tradingview-widget-container__widget"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
-                    {
-                        "width": "100%",
-                        "height": "100%",
-                        "defaultColumn": "overview",
-                        "screener_type": "crypto_mkt",
-                        "displayCurrency": "USD",
-                        "colorTheme": "dark",
-                        "locale": "kr",
-                        "isTransparent": true
-                    }
-                    </script>
+            <!-- Order Book Section -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <h3>📊 BTC/USDT 호가창</h3>
+                            <span class="symbol">Binance</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 350px; padding: 10px;">
+                        <div id="btc-orderbook" style="height: 100%; overflow-y: auto;"></div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <h3>📊 ETH/USDT 호가창</h3>
+                            <span class="symbol">Binance</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 350px; padding: 10px;">
+                        <div id="eth-orderbook" style="height: 100%; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Overview Section -->
+            <div class="market-overview">
+                <div class="market-header">
+                    <h3>🌐 Crypto Market Overview</h3>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        Live Data
+                    </div>
+                </div>
+                <div class="market-widget">
+                    <!-- TradingView Crypto Market Widget -->
+                    <div class="tradingview-widget-container" style="height:100%;width:100%">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+                        {
+                            "width": "100%",
+                            "height": "100%",
+                            "defaultColumn": "overview",
+                            "screener_type": "crypto_mkt",
+                            "displayCurrency": "USD",
+                            "colorTheme": "dark",
+                            "locale": "en",
+                            "isTransparent": true
+                        }
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Analysis Widget -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <h3>📈 Technical Analysis</h3>
+                            <span class="symbol">BTC/USD</span>
+                        </div>
+                    </div>
+                    <div class="chart-container mini" style="height: 450px;">
+                        <div class="tradingview-widget-container" style="height:100%;width:100%">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                            {
+                                "interval": "1h",
+                                "width": "100%",
+                                "isTransparent": true,
+                                "height": "100%",
+                                "symbol": "BITSTAMP:BTCUSD",
+                                "showIntervalTabs": true,
+                                "displayMode": "multiple",
+                                "locale": "en",
+                                "colorTheme": "dark"
+                            }
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <h3>📈 Technical Analysis</h3>
+                            <span class="symbol">ETH/USD</span>
+                        </div>
+                    </div>
+                    <div class="chart-container mini" style="height: 450px;">
+                        <div class="tradingview-widget-container" style="height:100%;width:100%">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                            {
+                                "interval": "1h",
+                                "width": "100%",
+                                "isTransparent": true,
+                                "height": "100%",
+                                "symbol": "BITSTAMP:ETHUSD",
+                                "showIntervalTabs": true,
+                                "displayMode": "multiple",
+                                "locale": "en",
+                                "colorTheme": "dark"
+                            }
+                            </script>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Footer -->
+    <footer>
+        <p class="footer-text">
+            Market data provided by <a href="https://www.tradingview.com" target="_blank" rel="noopener">TradingView</a> • 
+            Prices are for informational purposes only
+        </p>
+    </footer>
+
+    <!-- Order Book JavaScript -->
     <script>
-        // Fetch crypto prices from CoinGecko API (free, no key needed)
-        async function fetchCryptoPrices() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
-                const data = await res.json();
-                
-                // Bitcoin
-                const btcPrice = data.bitcoin.usd;
-                const btcChange = data.bitcoin.usd_24h_change;
-                document.getElementById('btc-price').textContent = '$' + btcPrice.toLocaleString();
-                const btcChangeEl = document.getElementById('btc-change');
-                btcChangeEl.textContent = (btcChange >= 0 ? '+' : '') + btcChange.toFixed(2) + '% (24h)';
-                btcChangeEl.className = 'stat-change ' + (btcChange >= 0 ? 'up' : 'down');
-                
-                // Ethereum
-                const ethPrice = data.ethereum.usd;
-                const ethChange = data.ethereum.usd_24h_change;
-                document.getElementById('eth-price').textContent = '$' + ethPrice.toLocaleString();
-                const ethChangeEl = document.getElementById('eth-change');
-                ethChangeEl.textContent = (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '% (24h)';
-                ethChangeEl.className = 'stat-change ' + (ethChange >= 0 ? 'up' : 'down');
-                
-            } catch (e) {
-                console.error('Crypto price fetch failed:', e);
+        // Order Book Styles (injected)
+        const orderbookStyles = `
+            .orderbook {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.8rem;
             }
-        }
-        
-        // Fetch BTC Dominance from CoinGecko
-        async function fetchDominance() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/global');
-                const data = await res.json();
-                const dominance = data.data.market_cap_percentage.btc;
-                document.getElementById('btc-dominance').textContent = dominance.toFixed(2) + '%';
-            } catch (e) {
-                console.error('Dominance fetch failed:', e);
+            .orderbook-header {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                padding: 8px 12px;
+                background: var(--bg-tertiary);
+                border-radius: 8px;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: var(--text-secondary);
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
-        }
-        
-        // Fetch Fear & Greed Index
-        async function fetchFearGreed() {
-            try {
-                const res = await fetch('https://api.alternative.me/fng/');
-                const data = await res.json();
-                const value = parseInt(data.data[0].value);
-                const label = data.data[0].value_classification;
+            .orderbook-header span:nth-child(2) { text-align: center; }
+            .orderbook-header span:nth-child(3) { text-align: right; }
+            .orderbook-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                overflow-y: auto;
+            }
+            .orderbook-asks {
+                display: flex;
+                flex-direction: column-reverse;
+            }
+            .orderbook-spread {
+                padding: 8px 12px;
+                text-align: center;
+                background: var(--bg-tertiary);
+                border-radius: 6px;
+                margin: 4px 0;
+                font-weight: 600;
+            }
+            .orderbook-spread .spread-price {
+                font-size: 1.1rem;
+                color: var(--text-primary);
+            }
+            .orderbook-spread .spread-label {
+                font-size: 0.7rem;
+                color: var(--text-secondary);
+                margin-left: 8px;
+            }
+            .orderbook-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                padding: 4px 12px;
+                position: relative;
+                border-radius: 4px;
+                transition: background 0.1s;
+            }
+            .orderbook-row:hover {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            .orderbook-row .depth-bar {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                opacity: 0.15;
+                border-radius: 4px;
+                pointer-events: none;
+            }
+            .orderbook-row.ask .depth-bar { background: var(--danger); }
+            .orderbook-row.bid .depth-bar { background: var(--success); }
+            .orderbook-row.ask .price { color: var(--danger); }
+            .orderbook-row.bid .price { color: var(--success); }
+            .orderbook-row .price { font-weight: 600; }
+            .orderbook-row .amount { text-align: center; color: var(--text-secondary); }
+            .orderbook-row .total { text-align: right; color: var(--text-secondary); }
+            .orderbook-loading {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                color: var(--text-secondary);
+            }
+            .orderbook-loading::before {
+                content: '';
+                width: 16px;
+                height: 16px;
+                border: 2px solid var(--border-color);
+                border-top-color: var(--accent);
+                border-radius: 50%;
+                margin-right: 10px;
+                animation: spin 1s linear infinite;
+            }
+            .orderbook-error {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                color: var(--danger);
+                flex-direction: column;
+                gap: 8px;
+            }
+            .orderbook-error button {
+                background: var(--accent);
+                color: var(--bg-primary);
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+            }
+        `;
+
+        // Inject styles
+        const styleEl = document.createElement('style');
+        styleEl.textContent = orderbookStyles;
+        document.head.appendChild(styleEl);
+
+        // Order Book Class
+        class OrderBook {
+            constructor(containerId, symbol) {
+                this.container = document.getElementById(containerId);
+                this.symbol = symbol.toLowerCase();
+                this.ws = null;
+                this.asks = [];
+                this.bids = [];
+                this.maxDepth = 10;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
                 
-                document.getElementById('fear-index').textContent = value;
-                document.getElementById('fear-label').textContent = label;
+                this.render();
+                this.connect();
+            }
+
+            render() {
+                this.container.innerHTML = `
+                    <div class="orderbook">
+                        <div class="orderbook-header">
+                            <span>Price (USDT)</span>
+                            <span>Amount</span>
+                            <span>Total</span>
+                        </div>
+                        <div class="orderbook-content">
+                            <div class="orderbook-loading">Connecting to Binance...</div>
+                        </div>
+                    </div>
+                `;
+                this.contentEl = this.container.querySelector('.orderbook-content');
+            }
+
+            connect() {
+                const wsUrl = `wss://stream.binance.com:9443/ws/${this.symbol}@depth10@100ms`;
                 
-                const fearCard = document.querySelector('.stat-card.fear');
-                if (value <= 25) {
-                    fearCard.querySelector('.stat-icon').textContent = '😱';
-                } else if (value <= 45) {
-                    fearCard.querySelector('.stat-icon').textContent = '😰';
-                } else if (value <= 55) {
-                    fearCard.querySelector('.stat-icon').textContent = '😐';
-                } else if (value <= 75) {
-                    fearCard.querySelector('.stat-icon').textContent = '😊';
-                } else {
-                    fearCard.querySelector('.stat-icon').textContent = '🤑';
+                try {
+                    this.ws = new WebSocket(wsUrl);
+                    
+                    this.ws.onopen = () => {
+                        console.log(`OrderBook ${this.symbol}: Connected`);
+                        this.reconnectAttempts = 0;
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.updateData(data);
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error(`OrderBook ${this.symbol}: Error`, error);
+                    };
+                    
+                    this.ws.onclose = () => {
+                        console.log(`OrderBook ${this.symbol}: Disconnected`);
+                        this.scheduleReconnect();
+                    };
+                } catch (error) {
+                    console.error(`OrderBook ${this.symbol}: Connection failed`, error);
+                    this.showError();
                 }
-            } catch (e) {
-                console.error('Fear & Greed fetch failed:', e);
+            }
+
+            scheduleReconnect() {
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+                    console.log(`OrderBook ${this.symbol}: Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+                    setTimeout(() => this.connect(), delay);
+                } else {
+                    this.showError();
+                }
+            }
+
+            showError() {
+                this.contentEl.innerHTML = `
+                    <div class="orderbook-error">
+                        <span>⚠️ Connection lost</span>
+                        <button onclick="orderbooks['${this.symbol}'].reconnect()">Reconnect</button>
+                    </div>
+                `;
+            }
+
+            reconnect() {
+                this.reconnectAttempts = 0;
+                this.contentEl.innerHTML = '<div class="orderbook-loading">Reconnecting...</div>';
+                this.connect();
+            }
+
+            updateData(data) {
+                this.asks = data.asks.slice(0, this.maxDepth).reverse();
+                this.bids = data.bids.slice(0, this.maxDepth);
+                this.renderOrderBook();
+            }
+
+            formatNumber(num, decimals = 2) {
+                const n = parseFloat(num);
+                if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+                if (n >= 1000) return (n / 1000).toFixed(2) + 'K';
+                return n.toFixed(decimals);
+            }
+
+            formatPrice(price) {
+                const p = parseFloat(price);
+                if (p >= 10000) return p.toFixed(1);
+                if (p >= 1000) return p.toFixed(2);
+                if (p >= 100) return p.toFixed(3);
+                return p.toFixed(4);
+            }
+
+            renderOrderBook() {
+                const maxAskTotal = Math.max(...this.asks.map(a => parseFloat(a[0]) * parseFloat(a[1])));
+                const maxBidTotal = Math.max(...this.bids.map(b => parseFloat(b[0]) * parseFloat(b[1])));
+                const maxTotal = Math.max(maxAskTotal, maxBidTotal);
+
+                const bestAsk = this.asks.length ? parseFloat(this.asks[this.asks.length - 1][0]) : 0;
+                const bestBid = this.bids.length ? parseFloat(this.bids[0][0]) : 0;
+                const spread = bestAsk - bestBid;
+                const spreadPercent = bestBid > 0 ? ((spread / bestBid) * 100).toFixed(3) : '0.000';
+
+                let html = '<div class="orderbook-asks">';
+                
+                // Asks (売り - 매도)
+                for (const [price, amount] of this.asks) {
+                    const total = parseFloat(price) * parseFloat(amount);
+                    const depthWidth = (total / maxTotal * 100).toFixed(1);
+                    html += `
+                        <div class="orderbook-row ask">
+                            <div class="depth-bar" style="width: ${depthWidth}%"></div>
+                            <span class="price">${this.formatPrice(price)}</span>
+                            <span class="amount">${this.formatNumber(amount, 4)}</span>
+                            <span class="total">${this.formatNumber(total)}</span>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+
+                // Spread
+                html += `
+                    <div class="orderbook-spread">
+                        <span class="spread-price">${this.formatPrice(bestAsk)}</span>
+                        <span class="spread-label">Spread: ${this.formatPrice(spread)} (${spreadPercent}%)</span>
+                    </div>
+                `;
+
+                html += '<div class="orderbook-bids">';
+                
+                // Bids (買い - 매수)
+                for (const [price, amount] of this.bids) {
+                    const total = parseFloat(price) * parseFloat(amount);
+                    const depthWidth = (total / maxTotal * 100).toFixed(1);
+                    html += `
+                        <div class="orderbook-row bid">
+                            <div class="depth-bar" style="width: ${depthWidth}%"></div>
+                            <span class="price">${this.formatPrice(price)}</span>
+                            <span class="amount">${this.formatNumber(amount, 4)}</span>
+                            <span class="total">${this.formatNumber(total)}</span>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+
+                this.contentEl.innerHTML = html;
+            }
+
+            destroy() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
             }
         }
+
+        // Initialize Order Books
+        const orderbooks = {};
         
-        // Initial fetch
-        fetchCryptoPrices();
-        fetchDominance();
-        fetchFearGreed();
-        
-        // Update every 30 seconds
-        setInterval(fetchCryptoPrices, 30000);
-        setInterval(fetchDominance, 60000);
-        setInterval(fetchFearGreed, 300000);
-        
-        console.log('🪙 Crypto dashboard initialized');
+        document.addEventListener('DOMContentLoaded', () => {
+            orderbooks['btcusdt'] = new OrderBook('btc-orderbook', 'btcusdt');
+            orderbooks['ethusdt'] = new OrderBook('eth-orderbook', 'ethusdt');
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            Object.values(orderbooks).forEach(ob => ob.destroy());
+        });
     </script>
 </body>
 </html>

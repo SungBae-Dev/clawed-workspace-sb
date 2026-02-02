@@ -1057,12 +1057,81 @@
             });
         });
 
+        // ========== 환율 실시간 업데이트 ==========
+        let prevExchange = {};
+        
+        async function fetchExchangeRates() {
+            try {
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const data = await res.json();
+                
+                const krw = data.rates.KRW;
+                const jpy = data.rates.JPY;
+                const eur = data.rates.EUR;
+                const cny = data.rates.CNY;
+                
+                return {
+                    USDKRW: krw,
+                    EURKRW: krw / eur,
+                    JPYKRW: krw / jpy * 100,
+                    CNYKRW: krw / cny
+                };
+            } catch (e) {
+                console.error('환율 API 에러:', e);
+                return null;
+            }
+        }
+        
+        function updateExchangeUI(rates) {
+            if (!rates) return;
+            
+            Object.entries(rates).forEach(([key, rate]) => {
+                const el = document.querySelector(`[data-currency="${key}"]`);
+                if (!el) return;
+                
+                const valueEl = el.querySelector('.rate-value');
+                const changeEl = el.querySelector('.rate-change');
+                
+                if (valueEl) {
+                    const formatted = rate.toLocaleString('ko-KR', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    });
+                    valueEl.textContent = formatted;
+                }
+                
+                // 변동률 계산
+                if (changeEl && prevExchange[key]) {
+                    const change = ((rate - prevExchange[key]) / prevExchange[key]) * 100;
+                    const sign = change >= 0 ? '+' : '';
+                    changeEl.textContent = `${sign}${change.toFixed(2)}%`;
+                    changeEl.className = `rate-change ${change >= 0 ? 'up' : 'down'}`;
+                }
+                
+                prevExchange[key] = rate;
+            });
+            
+            // 업데이트 시간 표시
+            document.getElementById('last-update').textContent = 
+                new Date().toLocaleTimeString('ko-KR', { hour12: false });
+        }
+        
+        async function pollExchangeRates() {
+            const rates = await fetchExchangeRates();
+            updateExchangeUI(rates);
+        }
+        
         // ========== 초기화 ==========
         // 뉴스 로드
         renderNews('all');
         
         // 상승 종목 로드
         renderMovers('up');
+        
+        // 환율 실시간 폴링 시작 (5초마다)
+        pollExchangeRates();
+        setInterval(pollExchangeRates, 5000);
+        console.log('💱 환율 실시간 업데이트 시작 (5초 간격)');
         
         // Market 모듈 초기화
         if (typeof Market !== 'undefined') {
